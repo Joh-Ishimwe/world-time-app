@@ -38,7 +38,7 @@ class _HomeScreenState extends State<HomeScreen> {
           final name = country['name']['common'] as String;
           final flag = (country['flag'] ?? '🏳️') as String;
           final timezones = (country['timezones'] ?? []) as List<dynamic>;
-          final timezone = timezones.isNotEmpty ? timezones[0] as String : 'Unknown';
+          final timezone = timezones.isNotEmpty ? timezones[0] as String : 'UTC';
           return {'name': name, 'timezone': timezone, 'flag': flag};
         }).toList();
 
@@ -61,7 +61,8 @@ class _HomeScreenState extends State<HomeScreen> {
   void _filterCountries() {
     setState(() {
       filteredCountries = countries
-          .where((country) => country['name']!.toLowerCase().contains(searchController.text.toLowerCase()))
+          .where((country) =>
+              country['name']!.toLowerCase().contains(searchController.text.toLowerCase()))
           .toList();
     });
   }
@@ -69,81 +70,70 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Choose a Country')),
+      backgroundColor: Colors.grey[200],
+      appBar: AppBar(
+        backgroundColor: Colors.blue[900],
+        title: const Text('Choose a Location'),
+        centerTitle: true,
+        elevation: 0,
+      ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : countries.isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.error, color: Colors.red, size: 50),
-                      const SizedBox(height: 10),
-                      const Text(
-                        'Failed to load countries. Please try again.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 18),
+          : Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: TextField(
+                    controller: searchController,
+                    decoration: InputDecoration(
+                      labelText: 'Search for a country',
+                      prefixIcon: const Icon(Icons.search),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.0),
                       ),
-                      const SizedBox(height: 20),
-                      ElevatedButton(
-                        onPressed: fetchCountries,
-                        child: const Text('Retry'),
-                      ),
-                    ],
+                    ),
                   ),
-                )
-              : Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: TextField(
-                        controller: searchController,
-                        decoration: InputDecoration(
-                          labelText: 'Search for a country',
-                          prefixIcon: const Icon(Icons.search),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0)),
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child: filteredCountries.isEmpty
-                          ? const Center(
-                              child: Text(
-                                'No countries found. Try a different search.',
-                                style: TextStyle(fontSize: 16),
-                              ),
-                            )
-                          : ListView.builder(
-                              itemCount: filteredCountries.length,
-                              itemBuilder: (context, index) {
-                                return Card(
-                                  elevation: 4,
-                                  margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-                                  child: ListTile(
-                                    leading: Text(filteredCountries[index]['flag']!),
-                                    title: Text(
-                                      filteredCountries[index]['name']!,
-                                      style: const TextStyle(fontWeight: FontWeight.bold),
-                                    ),
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => DetailScreen(
-                                            country: filteredCountries[index]['name']!,
-                                            timezone: filteredCountries[index]['timezone']!,
-                                            flag: filteredCountries[index]['flag']!,
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                );
-                              },
-                            ),
-                    ),
-                  ],
                 ),
+                Expanded(
+                  child: filteredCountries.isEmpty
+                      ? const Center(
+                          child: Text(
+                            'No countries found. Try a different search.',
+                            style: TextStyle(fontSize: 16),
+                          ),
+                        )
+                      : ListView.builder(
+                          itemCount: filteredCountries.length,
+                          itemBuilder: (context, index) {
+                            final country = filteredCountries[index];
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 1.0, horizontal: 4.0),
+                              child: Card(
+                                child: ListTile(
+                                  leading: Text(country['flag']!),
+                                  title: Text(
+                                    country['name']!,
+                                    style: const TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => DetailScreen(
+                                          country: country['name']!,
+                                          timezone: country['timezone']!,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                ),
+              ],
+            ),
     );
   }
 }
