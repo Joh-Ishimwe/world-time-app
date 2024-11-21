@@ -26,34 +26,26 @@ class _ChooseLocationState extends State<ChooseLocation> {
   @override
   void initState() {
     super.initState();
-    // Initially, show all locations
-    filteredLocations = locations;
-
-    // Listen for changes in the search field
-    searchController.addListener(() {
-      filterLocations(searchController.text);
-    });
-  }
-
-  @override
-  void dispose() {
-    searchController.dispose();
-    super.dispose();
+    filteredLocations = locations; // Initialize with all locations
   }
 
   void filterLocations(String query) {
-    final results = locations
-        .where((location) =>
-            location.location.toLowerCase().contains(query.toLowerCase()))
-        .toList();
-
     setState(() {
-      filteredLocations = results;
+      if (query.isEmpty) {
+        filteredLocations = locations; // Show all locations if search is empty
+      } else {
+        filteredLocations = locations
+            .where((location) =>
+                location.location.toLowerCase().contains(query.toLowerCase()))
+            .toList();
+      }
     });
   }
 
   void updateTime(int index) async {
     WorldTime instance = filteredLocations[index];
+
+    // Show loading spinner
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -62,7 +54,11 @@ class _ChooseLocationState extends State<ChooseLocation> {
 
     try {
       await instance.getTime();
-      Navigator.pop(context); // Remove loading spinner
+
+      // Remove loading spinner
+      Navigator.pop(context);
+
+      // Navigate to home with time data
       Navigator.pushReplacementNamed(context, '/home', arguments: {
         'location': instance.location,
         'flag': instance.flag,
@@ -70,7 +66,10 @@ class _ChooseLocationState extends State<ChooseLocation> {
         'isDaytime': instance.isDaytime,
       });
     } catch (e) {
-      Navigator.pop(context); // Remove loading spinner
+      // Remove loading spinner
+      Navigator.pop(context);
+
+      // Show error dialog
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
@@ -99,21 +98,22 @@ class _ChooseLocationState extends State<ChooseLocation> {
       ),
       body: Column(
         children: [
-          // Search Bar
+          // Search bar
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: TextField(
               controller: searchController,
+              onChanged: filterLocations,
               decoration: InputDecoration(
                 labelText: 'Search for a location',
                 prefixIcon: Icon(Icons.search),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10.0),
+                  borderRadius: BorderRadius.circular(8.0),
                 ),
               ),
             ),
           ),
-          // List of Locations
+          // List of locations
           Expanded(
             child: ListView.builder(
               itemCount: filteredLocations.length,
@@ -125,7 +125,8 @@ class _ChooseLocationState extends State<ChooseLocation> {
                       onTap: () => updateTime(index),
                       title: Text(filteredLocations[index].location),
                       leading: CircleAvatar(
-                        backgroundImage: AssetImage('assets/${filteredLocations[index].flag}'),
+                        backgroundImage:
+                            AssetImage('assets/${filteredLocations[index].flag}'),
                       ),
                     ),
                   ),
