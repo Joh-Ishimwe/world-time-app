@@ -1,7 +1,8 @@
 import 'package:animated_splash_screen/animated_splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
-import 'home_screen.dart';
+import 'package:world_time_app/screens/choose_location.dart';
+
 
 class SplashScreen extends StatelessWidget {
   @override
@@ -24,7 +25,7 @@ class SplashScreen extends StatelessWidget {
           ),
         ],
       ),
-      nextScreen: HomeScreen(),
+      nextScreen: ChooseLocation(),
       duration: 3000,
       backgroundColor: Colors.white,
       splashIconSize: 2500,
